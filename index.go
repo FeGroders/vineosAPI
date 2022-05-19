@@ -6,17 +6,29 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/joho/godotenv"
 )
 
-const (
-    DB_USER     = "postgres"
-    DB_PASSWORD = "postgres"
-    DB_NAME     = "postgres"
-	DB_HOST     = "localhost"
-	DB_PORT     = "5432"
+// use godot package to load/read the .env file and
+// return the value of the key
+func goDotEnvVariable(key string) string {
+	err := godotenv.Load(".env")
+	if err != nil {
+	  log.Fatalf("Error loading .env file")
+	}
+	return os.Getenv(key)
+}
+
+var (
+    DB_USER     = goDotEnvVariable("DB_USER")
+    DB_PASSWORD = goDotEnvVariable("DB_PASSWORD")
+    DB_NAME     = goDotEnvVariable("DB_NAME")
+	DB_HOST     = goDotEnvVariable("DB_HOST")
+	DB_PORT     = goDotEnvVariable("DB_PORT")
 )
 
 // DB set up
@@ -144,8 +156,8 @@ func CreateVinho(w http.ResponseWriter, r *http.Request) {
 
     	// check errors
     	checkErr(err)
-
-    response = JsonResponse{Type: "success", Message: "The movie has been inserted successfully!"}
+		printMessage("Vinho inserido com sucesso!")
+    	response = JsonResponse{Type: "success", Message: "O vinho foi inserido com sucesso!"}
     }
 
     json.NewEncoder(w).Encode(response)
