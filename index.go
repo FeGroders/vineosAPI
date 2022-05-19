@@ -123,25 +123,27 @@ func GetVinhos(w http.ResponseWriter, r *http.Request) {
 // Create a movie
 // response and request handlers
 func CreateVinho(w http.ResponseWriter, r *http.Request) {
-    vinhoID := r.FormValue("vinhoID")
-    vinhoNome := r.FormValue("vinhoNome")
+    nome := r.FormValue("nome")
+	descricao := r.FormValue("descricao")
+	ano := r.FormValue("ano")
+	preco := r.FormValue("preco")
+	imagem := r.FormValue("imagem")
+	disponivel := r.FormValue("disponivel")
 
     var response = JsonResponse{}
 
-    if vinhoID == "" || vinhoNome == "" {
-        response = JsonResponse{Type: "error", Message: "You are missing movieID or movieName parameter."}
+    if nome == "" || descricao == "" {
+        response = JsonResponse{Type: "error", Message: "Está faltando algum parâmetro. Verifique!."}
     } else {
         db := setupDB()
 
-        printMessage("Inserting vinho into DB")
-
-        fmt.Println("Inserting new vinho with ID: " + vinhoID + " and name: " + vinhoNome)
+        printMessage("Inserindo vinho no DB")
 
         var lastInsertID int
-    err := db.QueryRow("INSERT INTO vinhos(movieID, movieName) VALUES($1, $2) returning id;", vinhoID, vinhoNome).Scan(&lastInsertID)
+   		err := db.QueryRow("INSERT INTO vinhos(nome, descricao, ano, preco, imagem, disponivel) VALUES($1, $2, $3, $4, $5, $6) returning id;", nome, descricao, ano, preco, imagem, disponivel).Scan(&lastInsertID)
 
-    // check errors
-    checkErr(err)
+    	// check errors
+    	checkErr(err)
 
     response = JsonResponse{Type: "success", Message: "The movie has been inserted successfully!"}
     }
@@ -154,23 +156,23 @@ func CreateVinho(w http.ResponseWriter, r *http.Request) {
 func DeleteVinho(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
 
-    vinhoID := params["vinhoID"]
+    id := params["vinhoID"]
 
     var response = JsonResponse{}
 
-    if vinhoID == "" {
-        response = JsonResponse{Type: "error", Message: "You are missing movieID parameter."}
+    if id == "" {
+        response = JsonResponse{Type: "error", Message: "Está faltando o parâmetro vinhoID."}
     } else {
         db := setupDB()
 
-        printMessage("Deleting movie from DB")
+        printMessage("Deletando vinho do DB")
 
-        _, err := db.Exec("DELETE FROM vinhos where movieID = $1", vinhoID)
+        _, err := db.Exec("DELETE FROM vinhos where id = $1", id)
 
         // check errors
         checkErr(err)
 
-        response = JsonResponse{Type: "success", Message: "The movie has been deleted successfully!"}
+        response = JsonResponse{Type: "success", Message: "o vinho foi deletado com sucesso!"}
     }
 
     json.NewEncoder(w).Encode(response)
