@@ -22,14 +22,14 @@ func (server *Server) CreateWine(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	post := models.Wine{}
-	err = json.Unmarshal(body, &post)
+	wine := models.Wine{}
+	err = json.Unmarshal(body, &wine)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	post.Prepare()
-	err = post.Validate()
+	wine.Prepare()
+	err = wine.Validate()
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
@@ -39,30 +39,31 @@ func (server *Server) CreateWine(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
 		return
 	}
-	if uid != post.AuthorID {
+	if uid == 0 {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	postCreated, err := post.SaveWine(server.DB)
+
+	wineCreated, err := wine.SaveWine(server.DB)
 	if err != nil {
 		formattedError := formaterror.FormatError(err.Error())
 		responses.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
 	}
-	w.Header().Set("Lacation", fmt.Sprintf("%s%s/%d", r.Host, r.URL.Path, postCreated.ID))
-	responses.JSON(w, http.StatusCreated, postCreated)
+	w.Header().Set("Lacation", fmt.Sprintf("%s%s/%d", r.Host, r.URL.Path, wineCreated.ID))
+	responses.JSON(w, http.StatusCreated, wineCreated)
 }
 
 func (server *Server) GetWines(w http.ResponseWriter, r *http.Request) {
 
-	post := models.Wine{}
+	wine := models.Wine{}
 
-	posts, err := post.FindAllWines(server.DB)
+	wines, err := wine.FindAllWines(server.DB)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, posts)
+	responses.JSON(w, http.StatusOK, wines)
 }
 
 func (server *Server) GetWine(w http.ResponseWriter, r *http.Request) {
@@ -73,21 +74,21 @@ func (server *Server) GetWine(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	post := models.Wine{}
+	wine := models.Wine{}
 
-	postReceived, err := post.FindWineByID(server.DB, pid)
+	wineReceived, err := wine.FindWineByID(server.DB, pid)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, postReceived)
+	responses.JSON(w, http.StatusOK, wineReceived)
 }
 
 func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	// Check if the post id is valid
+	// Check if the wine id is valid
 	pid, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
@@ -100,21 +101,20 @@ func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
 		return
 	}
+	if uid == 0 {
+		responses.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
+		return
+	}
 
-	// Check if the post exist
-	post := models.Wine{}
-	err = server.DB.Debug().Model(models.Wine{}).Where("id = ?", pid).Take(&post).Error
+	// Check if the wine exist
+	wine := models.Wine{}
+	err = server.DB.Debug().Model(models.Wine{}).Where("id = ?", pid).Take(&wine).Error
 	if err != nil {
 		responses.ERROR(w, http.StatusNotFound, errors.New("Wine not found"))
 		return
 	}
 
-	// If a user attempt to update a post not belonging to him
-	if uid != post.AuthorID {
-		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
-		return
-	}
-	// Read the data posted
+	// Read the data wineed
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -122,43 +122,37 @@ func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start processing the request data
-	postUpdate := models.Wine{}
-	err = json.Unmarshal(body, &postUpdate)
+	wineUpdate := models.Wine{}
+	err = json.Unmarshal(body, &wineUpdate)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
-	//Also check if the request user id is equal to the one gotten from token
-	if uid != postUpdate.AuthorID {
-		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
-		return
-	}
-
-	postUpdate.Prepare()
-	err = postUpdate.Validate()
+	wineUpdate.Prepare()
+	err = wineUpdate.Validate()
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
-	postUpdate.ID = post.ID //this is important to tell the model the post id to update, the other update field are set above
+	wineUpdate.ID = wine.ID //this is important to tell the model the wine id to update, the other update field are set above
 
-	postUpdated, err := postUpdate.UpdateWine(server.DB)
+	wineUpdated, err := wineUpdate.UpdateWine(server.DB)
 
 	if err != nil {
 		formattedError := formaterror.FormatError(err.Error())
 		responses.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
 	}
-	responses.JSON(w, http.StatusOK, postUpdated)
+	responses.JSON(w, http.StatusOK, wineUpdated)
 }
 
 func (server *Server) DeleteWine(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	// Is a valid post id given to us?
+	// Is a valid wine id given to us?
 	pid, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
@@ -171,21 +165,20 @@ func (server *Server) DeleteWine(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
 		return
 	}
+	if uid == 0 {
+		responses.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
+		return
+	}
 
-	// Check if the post exist
-	post := models.Wine{}
-	err = server.DB.Debug().Model(models.Wine{}).Where("id = ?", pid).Take(&post).Error
+	// Check if the wine exist
+	wine := models.Wine{}
+	err = server.DB.Debug().Model(models.Wine{}).Where("id = ?", pid).Take(&wine).Error
 	if err != nil {
 		responses.ERROR(w, http.StatusNotFound, errors.New("Unauthorized"))
 		return
 	}
 
-	// Is the authenticated user, the owner of this post?
-	if uid != post.AuthorID {
-		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
-		return
-	}
-	_, err = post.DeleteWine(server.DB, pid, uid)
+	_, err = wine.DeleteWine(server.DB, pid)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return

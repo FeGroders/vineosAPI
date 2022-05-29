@@ -4,34 +4,34 @@ import (
 	"errors"
 	"html"
 	"strings"
-	"time"
-
 	"github.com/jinzhu/gorm"
 )
 
 type Wine struct {
 	ID     	    uint64    `gorm:"primary_key;auto_increment" json:"id"`
-	Nome  	    string    `gorm:"size:200;not null;unique" json:"title"`
-	Descricao   string    `gorm:"size:200;not null;" json:"content"`
-	Ano         string    `gorm:"size:200;not null;" json:"ano"`
-	Preco 	    string    `gorm:"size:200;not null;" json:"preco"`
-	Imagem 	    string    `gorm:"size:200;not null;" json:"imagem"`
-	Disponivel  bool      `gorm:"type:bool;default:false"`
+	Name  	    string    `gorm:"size:200;not null;unique" json:"title"`
+	Description   string    `gorm:"size:200;not null;" json:"content"`
+	Year         string    `gorm:"size:200;not null;" json:"year"`
+	Price 	    string    `gorm:"size:200;not null;" json:"price"`
+	Image 	    string    `gorm:"size:200;not null;" json:"image"`
+	Available  bool      `gorm:"type:bool;default:false" json:"available"`
 }
 
 func (w *Wine) Prepare() {
 	w.ID = 0
-	w.Nome = html.EscapeString(strings.TrimSpace(w.Nome))
-	w.Descricao = html.EscapeString(strings.TrimSpace(w.Descricao))
+	w.Name = html.EscapeString(strings.TrimSpace(w.Name))
+	w.Description = html.EscapeString(strings.TrimSpace(w.Description))
+	// w.Image = html.EscapeString(strings.TrimSpace(w.Description))
+	// w.Available = true
 }
 
 func (w *Wine) Validate() error {
 
-	if w.Nome == "" {
-		return errors.New("Required Nome")
+	if w.Name == "" {
+		return errors.New("Required Name")
 	}
-	if w.Descricao == "" {
-		return errors.New("Required Descricao")
+	if w.Description == "" {
+		return errors.New("Required Description")
 	}
 	return nil
 }
@@ -43,7 +43,8 @@ func (w *Wine) SaveWine(db *gorm.DB) (*Wine, error) {
 		return &Wine{}, err
 	}
 	if w.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
+		// err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
+		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
 		if err != nil {
 			return &Wine{}, err
 		}
@@ -60,7 +61,8 @@ func (w *Wine) FindAllWines(db *gorm.DB) (*[]Wine, error) {
 	}
 	if len(wines) > 0 {
 		for i, _ := range wines {
-			err := db.Debug().Model(&User{}).Where("id = ?", wines[i].AuthorID).Take(&wines[i].Author).Error
+			// err := db.Debug().Model(&User{}).Where("id = ?", wines[i].AuthorID).Take(&wines[i].Author).Error
+			err := db.Debug().Model(&User{}).Where("id = ?", wines[i].ID).Take(&wines[i].ID).Error
 			if err != nil {
 				return &[]Wine{}, err
 			}
@@ -76,7 +78,8 @@ func (w *Wine) FindWineByID(db *gorm.DB, pid uint64) (*Wine, error) {
 		return &Wine{}, err
 	}
 	if w.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
+		// err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
+		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
 		if err != nil {
 			return &Wine{}, err
 		}
@@ -88,12 +91,13 @@ func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
 
 	var err error
 
-	err = db.Debug().Model(&Wine{}).Where("id = ?", w.ID).Updates(Wine{Nome: w.Nome, Descricao: w.Descricao, UpdatedAt: time.Now()}).Error
+	err = db.Debug().Model(&Wine{}).Where("id = ?", w.ID).Updates(Wine{Name: w.Name, Description: w.Description, Year: w.Year, Price: w.Price, Image: w.Image, Available: w.Available}).Error
 	if err != nil {
 		return &Wine{}, err
 	}
 	if w.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
+		// err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
+		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
 		if err != nil {
 			return &Wine{}, err
 		}
@@ -101,9 +105,9 @@ func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
 	return w, nil
 }
 
-func (w *Wine) DeleteWine(db *gorm.DB, pid uint64, uid uint32) (int64, error) {
+func (w *Wine) DeleteWine(db *gorm.DB, pid uint64) (int64, error) {
 
-	db = db.Debug().Model(&Wine{}).Where("id = ? and author_id = ?", pid, uid).Take(&Wine{}).Delete(&Wine{})
+	db = db.Debug().Model(&Wine{}).Where("id = ?", pid).Take(&Wine{}).Delete(&Wine{})
 
 	if db.Error != nil {
 		if gorm.IsRecordNotFoundError(db.Error) {
