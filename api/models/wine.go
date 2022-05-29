@@ -9,111 +9,105 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type Post struct {
-	ID        uint64    `gorm:"primary_key;auto_increment" json:"id"`
-	Title     string    `gorm:"size:255;not null;unique" json:"title"`
-	Content   string    `gorm:"size:255;not null;" json:"content"`
-	Author    User      `json:"author"`
-	AuthorID  uint32    `gorm:"not null" json:"author_id"`
-	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+type Wine struct {
+	ID     	    uint64    `gorm:"primary_key;auto_increment" json:"id"`
+	Nome  	    string    `gorm:"size:200;not null;unique" json:"title"`
+	Descricao   string    `gorm:"size:200;not null;" json:"content"`
+	Ano         string    `gorm:"size:200;not null;" json:"ano"`
+	Preco 	    string    `gorm:"size:200;not null;" json:"preco"`
+	Imagem 	    string    `gorm:"size:200;not null;" json:"imagem"`
+	Disponivel  bool      `gorm:"type:bool;default:false"`
 }
 
-func (p *Post) Prepare() {
-	p.ID = 0
-	p.Title = html.EscapeString(strings.TrimSpace(p.Title))
-	p.Content = html.EscapeString(strings.TrimSpace(p.Content))
-	p.Author = User{}
-	p.CreatedAt = time.Now()
-	p.UpdatedAt = time.Now()
+func (w *Wine) Prepare() {
+	w.ID = 0
+	w.Nome = html.EscapeString(strings.TrimSpace(w.Nome))
+	w.Descricao = html.EscapeString(strings.TrimSpace(w.Descricao))
 }
 
-func (p *Post) Validate() error {
+func (w *Wine) Validate() error {
 
-	if p.Title == "" {
-		return errors.New("Required Title")
+	if w.Nome == "" {
+		return errors.New("Required Nome")
 	}
-	if p.Content == "" {
-		return errors.New("Required Content")
-	}
-	if p.AuthorID < 1 {
-		return errors.New("Required Author")
+	if w.Descricao == "" {
+		return errors.New("Required Descricao")
 	}
 	return nil
 }
 
-func (p *Post) SavePost(db *gorm.DB) (*Post, error) {
+func (w *Wine) SaveWine(db *gorm.DB) (*Wine, error) {
 	var err error
-	err = db.Debug().Model(&Post{}).Create(&p).Error
+	err = db.Debug().Model(&Wine{}).Create(&w).Error
 	if err != nil {
-		return &Post{}, err
+		return &Wine{}, err
 	}
-	if p.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", p.AuthorID).Take(&p.Author).Error
+	if w.ID != 0 {
+		err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
 		if err != nil {
-			return &Post{}, err
+			return &Wine{}, err
 		}
 	}
-	return p, nil
+	return w, nil
 }
 
-func (p *Post) FindAllPosts(db *gorm.DB) (*[]Post, error) {
+func (w *Wine) FindAllWines(db *gorm.DB) (*[]Wine, error) {
 	var err error
-	posts := []Post{}
-	err = db.Debug().Model(&Post{}).Limit(100).Find(&posts).Error
+	wines := []Wine{}
+	err = db.Debug().Model(&Wine{}).Limit(100).Find(&wines).Error
 	if err != nil {
-		return &[]Post{}, err
+		return &[]Wine{}, err
 	}
-	if len(posts) > 0 {
-		for i, _ := range posts {
-			err := db.Debug().Model(&User{}).Where("id = ?", posts[i].AuthorID).Take(&posts[i].Author).Error
+	if len(wines) > 0 {
+		for i, _ := range wines {
+			err := db.Debug().Model(&User{}).Where("id = ?", wines[i].AuthorID).Take(&wines[i].Author).Error
 			if err != nil {
-				return &[]Post{}, err
+				return &[]Wine{}, err
 			}
 		}
 	}
-	return &posts, nil
+	return &wines, nil
 }
 
-func (p *Post) FindPostByID(db *gorm.DB, pid uint64) (*Post, error) {
+func (w *Wine) FindWineByID(db *gorm.DB, pid uint64) (*Wine, error) {
 	var err error
-	err = db.Debug().Model(&Post{}).Where("id = ?", pid).Take(&p).Error
+	err = db.Debug().Model(&Wine{}).Where("id = ?", pid).Take(&w).Error
 	if err != nil {
-		return &Post{}, err
+		return &Wine{}, err
 	}
-	if p.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", p.AuthorID).Take(&p.Author).Error
+	if w.ID != 0 {
+		err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
 		if err != nil {
-			return &Post{}, err
+			return &Wine{}, err
 		}
 	}
-	return p, nil
+	return w, nil
 }
 
-func (p *Post) UpdateAPost(db *gorm.DB) (*Post, error) {
+func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
 
 	var err error
 
-	err = db.Debug().Model(&Post{}).Where("id = ?", p.ID).Updates(Post{Title: p.Title, Content: p.Content, UpdatedAt: time.Now()}).Error
+	err = db.Debug().Model(&Wine{}).Where("id = ?", w.ID).Updates(Wine{Nome: w.Nome, Descricao: w.Descricao, UpdatedAt: time.Now()}).Error
 	if err != nil {
-		return &Post{}, err
+		return &Wine{}, err
 	}
-	if p.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", p.AuthorID).Take(&p.Author).Error
+	if w.ID != 0 {
+		err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
 		if err != nil {
-			return &Post{}, err
+			return &Wine{}, err
 		}
 	}
-	return p, nil
+	return w, nil
 }
 
-func (p *Post) DeleteAPost(db *gorm.DB, pid uint64, uid uint32) (int64, error) {
+func (w *Wine) DeleteWine(db *gorm.DB, pid uint64, uid uint32) (int64, error) {
 
-	db = db.Debug().Model(&Post{}).Where("id = ? and author_id = ?", pid, uid).Take(&Post{}).Delete(&Post{})
+	db = db.Debug().Model(&Wine{}).Where("id = ? and author_id = ?", pid, uid).Take(&Wine{}).Delete(&Wine{})
 
 	if db.Error != nil {
 		if gorm.IsRecordNotFoundError(db.Error) {
-			return 0, errors.New("Post not found")
+			return 0, errors.New("Wine not found")
 		}
 		return 0, db.Error
 	}

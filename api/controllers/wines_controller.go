@@ -15,14 +15,14 @@ import (
 	"github.com/fegroders/vineosAPI/api/utils/formaterror"
 )
 
-func (server *Server) CreatePost(w http.ResponseWriter, r *http.Request) {
+func (server *Server) CreateWine(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	post := models.Post{}
+	post := models.Wine{}
 	err = json.Unmarshal(body, &post)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -43,7 +43,7 @@ func (server *Server) CreatePost(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	postCreated, err := post.SavePost(server.DB)
+	postCreated, err := post.SaveWine(server.DB)
 	if err != nil {
 		formattedError := formaterror.FormatError(err.Error())
 		responses.ERROR(w, http.StatusInternalServerError, formattedError)
@@ -53,11 +53,11 @@ func (server *Server) CreatePost(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusCreated, postCreated)
 }
 
-func (server *Server) GetPosts(w http.ResponseWriter, r *http.Request) {
+func (server *Server) GetWines(w http.ResponseWriter, r *http.Request) {
 
-	post := models.Post{}
+	post := models.Wine{}
 
-	posts, err := post.FindAllPosts(server.DB)
+	posts, err := post.FindAllWines(server.DB)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -65,7 +65,7 @@ func (server *Server) GetPosts(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, posts)
 }
 
-func (server *Server) GetPost(w http.ResponseWriter, r *http.Request) {
+func (server *Server) GetWine(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	pid, err := strconv.ParseUint(vars["id"], 10, 64)
@@ -73,9 +73,9 @@ func (server *Server) GetPost(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	post := models.Post{}
+	post := models.Wine{}
 
-	postReceived, err := post.FindPostByID(server.DB, pid)
+	postReceived, err := post.FindWineByID(server.DB, pid)
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -83,7 +83,7 @@ func (server *Server) GetPost(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, postReceived)
 }
 
-func (server *Server) UpdatePost(w http.ResponseWriter, r *http.Request) {
+func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
@@ -102,10 +102,10 @@ func (server *Server) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the post exist
-	post := models.Post{}
-	err = server.DB.Debug().Model(models.Post{}).Where("id = ?", pid).Take(&post).Error
+	post := models.Wine{}
+	err = server.DB.Debug().Model(models.Wine{}).Where("id = ?", pid).Take(&post).Error
 	if err != nil {
-		responses.ERROR(w, http.StatusNotFound, errors.New("Post not found"))
+		responses.ERROR(w, http.StatusNotFound, errors.New("Wine not found"))
 		return
 	}
 
@@ -122,7 +122,7 @@ func (server *Server) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start processing the request data
-	postUpdate := models.Post{}
+	postUpdate := models.Wine{}
 	err = json.Unmarshal(body, &postUpdate)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -144,7 +144,7 @@ func (server *Server) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	postUpdate.ID = post.ID //this is important to tell the model the post id to update, the other update field are set above
 
-	postUpdated, err := postUpdate.UpdateAPost(server.DB)
+	postUpdated, err := postUpdate.UpdateWine(server.DB)
 
 	if err != nil {
 		formattedError := formaterror.FormatError(err.Error())
@@ -154,7 +154,7 @@ func (server *Server) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, postUpdated)
 }
 
-func (server *Server) DeletePost(w http.ResponseWriter, r *http.Request) {
+func (server *Server) DeleteWine(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
@@ -173,8 +173,8 @@ func (server *Server) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the post exist
-	post := models.Post{}
-	err = server.DB.Debug().Model(models.Post{}).Where("id = ?", pid).Take(&post).Error
+	post := models.Wine{}
+	err = server.DB.Debug().Model(models.Wine{}).Where("id = ?", pid).Take(&post).Error
 	if err != nil {
 		responses.ERROR(w, http.StatusNotFound, errors.New("Unauthorized"))
 		return
@@ -185,7 +185,7 @@ func (server *Server) DeletePost(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
 		return
 	}
-	_, err = post.DeleteAPost(server.DB, pid, uid)
+	_, err = post.DeleteWine(server.DB, pid, uid)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
