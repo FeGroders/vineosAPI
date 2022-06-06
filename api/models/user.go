@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"html"
 	"log"
 	"strings"
@@ -90,7 +91,6 @@ func (u *User) Validate(action string) error {
 }
 
 func (u *User) SaveUser(db *gorm.DB) (*User, error) {
-
 	var err error
 	err = db.Debug().Create(&u).Error
 	if err != nil {
@@ -111,7 +111,9 @@ func (u *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 
 func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
 	var err error
-	err = db.Debug().Model(User{}).Where("id = ?", uid).Take(&u).Error
+	
+	err = db.Debug().Model(&User{}).Where("id = ?", uid).Take(&u).Error
+	fmt.Println(uid)
 	if err != nil {
 		return &User{}, err
 	}
@@ -147,7 +149,6 @@ func (u *User) UpdateUser(db *gorm.DB, uid uint32) (*User, error) {
 }
 
 func (u *User) DeleteUser(db *gorm.DB, uid uint32) (int64, error) {
-
 	db = db.Debug().Model(&User{}).Where("id = ?", uid).Take(&User{}).Delete(&User{})
 
 	if db.Error != nil {

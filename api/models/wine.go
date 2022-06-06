@@ -26,7 +26,6 @@ func (w *Wine) Prepare() {
 }
 
 func (w *Wine) Validate() error {
-
 	if w.Name == "" {
 		return errors.New("Required Name")
 	}
@@ -43,7 +42,6 @@ func (w *Wine) SaveWine(db *gorm.DB) (*Wine, error) {
 		return &Wine{}, err
 	}
 	if w.ID != 0 {
-		// err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
 		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
 		if err != nil {
 			return &Wine{}, err
@@ -61,7 +59,6 @@ func (w *Wine) FindAllWines(db *gorm.DB) (*[]Wine, error) {
 	}
 	if len(wines) > 0 {
 		for i, _ := range wines {
-			// err := db.Debug().Model(&User{}).Where("id = ?", wines[i].AuthorID).Take(&wines[i].Author).Error
 			err := db.Debug().Model(&User{}).Where("id = ?", wines[i].ID).Take(&wines[i].ID).Error
 			if err != nil {
 				return &[]Wine{}, err
@@ -78,7 +75,6 @@ func (w *Wine) FindWineByID(db *gorm.DB, pid uint64) (*Wine, error) {
 		return &Wine{}, err
 	}
 	if w.ID != 0 {
-		// err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
 		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
 		if err != nil {
 			return &Wine{}, err
@@ -88,7 +84,6 @@ func (w *Wine) FindWineByID(db *gorm.DB, pid uint64) (*Wine, error) {
 }
 
 func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
-
 	var err error
 
 	err = db.Debug().Model(&Wine{}).Where("id = ?", w.ID).Updates(Wine{Name: w.Name, Description: w.Description, Year: w.Year, Price: w.Price, Image: w.Image, Available: w.Available}).Error
@@ -96,7 +91,6 @@ func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
 		return &Wine{}, err
 	}
 	if w.ID != 0 {
-		// err = db.Debug().Model(&User{}).Where("id = ?", w.AuthorID).Take(&w.Author).Error
 		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
 		if err != nil {
 			return &Wine{}, err
@@ -106,7 +100,6 @@ func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
 }
 
 func (w *Wine) DeleteWine(db *gorm.DB, pid uint64) (int64, error) {
-
 	db = db.Debug().Model(&Wine{}).Where("id = ?", pid).Take(&Wine{}).Delete(&Wine{})
 
 	if db.Error != nil {

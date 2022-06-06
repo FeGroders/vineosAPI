@@ -85,7 +85,6 @@ func (server *Server) GetWine(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 
 	// Check if the wine id is valid
@@ -95,7 +94,7 @@ func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//CHeck if the auth token is valid and  get the user id from it
+	//Check if the auth token is valid and  get the user id from it
 	_, err = auth.ExtractTokenID(r)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))

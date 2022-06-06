@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	// "github.com/gorilla/handlers"
 	"github.com/rs/cors"
 
 
