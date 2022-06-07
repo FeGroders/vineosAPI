@@ -48,6 +48,8 @@ func (server *Server) Run(addr string) {
 	c := cors.New(cors.Options{
         AllowedOrigins: []string{"*"},
         AllowCredentials: true,
+		AllowedHeaders: []string{"Origin", "Content-Type", "Authorization"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
     })
 
     handler := c.Handler(server.Router)

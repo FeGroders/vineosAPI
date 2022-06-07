@@ -9,10 +9,10 @@ import (
 
 type Wine struct {
 	ID     	    uint64    `gorm:"primary_key;auto_increment" json:"id"`
-	Name  	    string    `gorm:"size:200;not null;unique" json:"title"`
+	Name  	    string    `gorm:"size:50;not null;" json:"title"`
 	Description   string    `gorm:"size:200;not null;" json:"content"`
-	Year         string    `gorm:"size:200;not null;" json:"year"`
-	Price 	    string    `gorm:"size:200;not null;" json:"price"`
+	Year         string    `gorm:"size:4;not null;" json:"year"`
+	Price 	    float64    `gorm:"type:decimal(10,2);" json:"price"`
 	Image 	    string    `gorm:"size:200;not null;" json:"image"`
 	Available  bool      `gorm:"type:bool;default:false" json:"available"`
 }
