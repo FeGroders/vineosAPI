@@ -16,7 +16,6 @@ import (
 )
 
 func (server *Server) CreateWine(w http.ResponseWriter, r *http.Request) {
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -50,12 +49,12 @@ func (server *Server) CreateWine(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
 	}
-	w.Header().Set("Lacation", fmt.Sprintf("%s%s/%d", r.Host, r.URL.Path, wineCreated.ID))
+
+	w.Header().Set("Location", fmt.Sprintf("%s%s/%d", r.Host, r.RequestURI, wineCreated.ID))
 	responses.JSON(w, http.StatusCreated, wineCreated)
 }
 
 func (server *Server) GetWines(w http.ResponseWriter, r *http.Request) {
-
 	wine := models.Wine{}
 
 	wines, err := wine.FindAllWines(server.DB)
@@ -67,7 +66,6 @@ func (server *Server) GetWines(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) GetWine(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	pid, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
@@ -144,7 +142,6 @@ func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) DeleteWine(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 
 	// Is a valid wine id given to us?

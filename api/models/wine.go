@@ -9,20 +9,20 @@ import (
 
 type Wine struct {
 	ID     	    uint64    `gorm:"primary_key;auto_increment" json:"id"`
-	Name  	    string    `gorm:"size:50;not null;" json:"title"`
-	Description   string    `gorm:"size:200;not null;" json:"content"`
-	Year         string    `gorm:"size:4;not null;" json:"year"`
+	Name  	    string    `gorm:"size:50;not null;" json:"name"`
+	Description string    `gorm:"size:200;not null;" json:"description"`
+	Year        string    `gorm:"size:4;not null;" json:"year"`
 	Price 	    float64    `gorm:"type:decimal(10,2);" json:"price"`
 	Image 	    string    `gorm:"size:200;not null;" json:"image"`
-	Available  bool      `gorm:"type:bool;default:false" json:"available"`
+	Available   bool      `gorm:"type:bool;default:false" json:"available"`
 }
 
 func (w *Wine) Prepare() {
 	w.ID = 0
 	w.Name = html.EscapeString(strings.TrimSpace(w.Name))
 	w.Description = html.EscapeString(strings.TrimSpace(w.Description))
-	// w.Image = html.EscapeString(strings.TrimSpace(w.Description))
-	// w.Available = true
+	w.Image = html.EscapeString(strings.TrimSpace(w.Image))
+	// w.Year = html.EscapeString(strings.TrimSpace(w.Year))
 }
 
 func (w *Wine) Validate() error {
@@ -37,15 +37,9 @@ func (w *Wine) Validate() error {
 
 func (w *Wine) SaveWine(db *gorm.DB) (*Wine, error) {
 	var err error
-	err = db.Debug().Model(&Wine{}).Create(&w).Error
+	err = db.Debug().Create(&w).Error
 	if err != nil {
 		return &Wine{}, err
-	}
-	if w.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
-		if err != nil {
-			return &Wine{}, err
-		}
 	}
 	return w, nil
 }
@@ -57,30 +51,20 @@ func (w *Wine) FindAllWines(db *gorm.DB) (*[]Wine, error) {
 	if err != nil {
 		return &[]Wine{}, err
 	}
-	if len(wines) > 0 {
-		for i, _ := range wines {
-			err := db.Debug().Model(&User{}).Where("id = ?", wines[i].ID).Take(&wines[i].ID).Error
-			if err != nil {
-				return &[]Wine{}, err
-			}
-		}
-	}
-	return &wines, nil
+	return &wines, err
 }
 
-func (w *Wine) FindWineByID(db *gorm.DB, pid uint64) (*Wine, error) {
+func (w *Wine) FindWineByID(db *gorm.DB, uid uint64) (*Wine, error) {
 	var err error
-	err = db.Debug().Model(&Wine{}).Where("id = ?", pid).Take(&w).Error
+	
+	err = db.Debug().Model(&Wine{}).Where("id = ?", uid).Take(&w).Error
 	if err != nil {
 		return &Wine{}, err
 	}
-	if w.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
-		if err != nil {
-			return &Wine{}, err
-		}
+	if gorm.IsRecordNotFoundError(err) {
+		return &Wine{}, errors.New("Wine Not Found")
 	}
-	return w, nil
+	return w, err
 }
 
 func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
@@ -91,7 +75,7 @@ func (w *Wine) UpdateWine(db *gorm.DB) (*Wine, error) {
 		return &Wine{}, err
 	}
 	if w.ID != 0 {
-		err = db.Debug().Model(&User{}).Where("id = ?", w.ID).Take(&w.ID).Error
+		err = db.Debug().Model(&Wine{}).Where("id = ?", w.ID).Take(&w.ID).Error
 		if err != nil {
 			return &Wine{}, err
 		}
