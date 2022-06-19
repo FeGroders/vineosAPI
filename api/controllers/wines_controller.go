@@ -133,11 +133,11 @@ func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 
 	wineUpdated, err := wineUpdate.UpdateWine(server.DB)
 
-	if err != nil {
-		formattedError := formaterror.FormatError(err.Error())
-		responses.ERROR(w, http.StatusInternalServerError, formattedError)
-		return
-	}
+	// if err != nil {
+	// 	formattedError := formaterror.FormatError(err.Error())
+	// 	responses.ERROR(w, http.StatusInternalServerError, formattedError)
+	// 	return
+	// }
 	responses.JSON(w, http.StatusOK, wineUpdated)
 }
 
