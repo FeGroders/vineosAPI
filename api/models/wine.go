@@ -4,6 +4,7 @@ import (
 	"errors"
 	"html"
 	"strings"
+
 	"github.com/jinzhu/gorm"
 )
 
