@@ -4,6 +4,7 @@ import (
 	"errors"
 	"html"
 	"strings"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -12,7 +13,7 @@ type Wine struct {
 	Name  	    string    `gorm:"size:50;not null;" json:"name"`
 	Description string    `gorm:"size:200;not null;" json:"description"`
 	Year        string    `gorm:"size:4;not null;" json:"year"`
-	Price 	    float64    `gorm:"type:decimal(10,2);" json:"price"`
+	Price 	    string    `gorm:"size:100;not null;" json:"price"`
 	Image 	    string    `gorm:"size:200;not null;" json:"image"`
 	Available   bool      `gorm:"type:bool;default:false" json:"available"`
 }

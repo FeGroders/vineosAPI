@@ -129,15 +129,10 @@ func (server *Server) UpdateWine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wineUpdate.ID = wine.ID //this is important to tell the model the wine id to update, the other update field are set above
+	wineUpdate.ID = wine.ID 
 
-	wineUpdated, err := wineUpdate.UpdateWine(server.DB)
+	wineUpdated, _ := wineUpdate.UpdateWine(server.DB)
 
-	if err != nil {
-		formattedError := formaterror.FormatError(err.Error())
-		responses.ERROR(w, http.StatusInternalServerError, formattedError)
-		return
-	}
 	responses.JSON(w, http.StatusOK, wineUpdated)
 }
 
